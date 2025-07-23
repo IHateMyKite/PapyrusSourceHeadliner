@@ -1,5 +1,8 @@
 .vs
+.xmake
+.idea
+build
 x64
 x86
-PapyrusSourceHeadliner\x64
-PapyrusSourceHeadliner\x86
+PapyrusSourceHeadliner/x64
+PapyrusSourceHeadliner/x86
