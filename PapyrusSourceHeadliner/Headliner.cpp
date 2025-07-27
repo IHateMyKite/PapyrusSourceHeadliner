@@ -1,4 +1,5 @@
 #include "Headliner.h"
+#include <sys/stat.h>
 
 std::string g_workdir = "";
 

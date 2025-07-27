@@ -121,10 +121,11 @@ bool PapyrusSource::FilterKeyword(std::string a_line)
             //comment after main word
             else if (loc_poscomm > loc_pos)
             {
-               return !isspace(a_line[loc_pos - 1]);
+                return !isspace(a_line[loc_pos - 1]);
             }
         }
     }
+    return true;
 }
 
 bool PapyrusSource::IsValid()
@@ -139,6 +140,16 @@ std::string PapyrusSource::GetPath()
 
 bool PapyrusSource::Process()
 {
+    if (!_file.is_open()) {
+        _file.open(_filepath.c_str());
+        if (!_file) {
+            std::cerr << "Failed to reopen file: " << _filepath << std::endl;
+            return false;
+        }
+        _file.clear();
+        _file.seekg(0, std::ios::beg);
+    }
+
     std::cout << "Processing file = " << _filepath << std::endl;
     std::string loc_line;
     std::ofstream temp;
