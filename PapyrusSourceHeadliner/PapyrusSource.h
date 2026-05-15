@@ -24,4 +24,5 @@ class PapyrusSource
         std::string _filename;
         std::string _endpatern = "";
         bool _dontignorenext = false;
+        int _paren_depth = 0;
 };

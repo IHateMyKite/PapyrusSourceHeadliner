@@ -1,5 +1,38 @@
 #include "PapyrusSource.h"
 
+namespace {
+
+// Papyrus param lists can span lines; count () outside double-quoted strings and \\ escapes.
+int paren_depth_after_line(const std::string& line, int depth)
+{
+    bool in_dquote = false;
+    for (size_t i = 0; i < line.size(); ++i) {
+        const unsigned char c = static_cast<unsigned char>(line[i]);
+        if (in_dquote) {
+            if (c == '\\' && i + 1 < line.size()) {
+                ++i;
+                continue;
+            }
+            if (c == '"') {
+                in_dquote = false;
+            }
+            continue;
+        }
+        if (c == '"') {
+            in_dquote = true;
+            continue;
+        }
+        if (c == '(') {
+            ++depth;
+        } else if (c == ')' && depth > 0) {
+            --depth;
+        }
+    }
+    return depth;
+}
+
+} // namespace
+
 std::vector<std::string> g_blacklist 
 {
     "endproperty",
@@ -157,9 +190,11 @@ bool PapyrusSource::Process()
 
     temp.open(loc_tmppath);
 
+    _paren_depth = 0;
+    _dontignorenext = false;
     bool loc_ignore = false;
-    
-    while (std::getline(_file, loc_line)) 
+
+    while (std::getline(_file, loc_line))
     {
 
         //change to lowecase and change all tabs to spaces
@@ -172,14 +207,31 @@ bool PapyrusSource::Process()
         //erase gap at start of line
         const std::string loc_delims(" \t"); //white chars
         size_t loc_firstcharpos = loc_line.find_first_not_of(loc_delims);
-        loc_line.erase(loc_line.begin(),loc_line.begin() + loc_firstcharpos);
+        if (loc_firstcharpos == std::string::npos) {
+            loc_line.clear();
+        } else {
+            loc_line.erase(loc_line.begin(), loc_line.begin() + static_cast<std::ptrdiff_t>(loc_firstcharpos));
+        }
 
+        if (_dontignorenext) {
+            _dontignorenext = false;
+            temp << loc_line << std::endl;
+            _paren_depth = paren_depth_after_line(loc_line, _paren_depth);
+            continue;
+        }
+
+        if (_paren_depth > 0) {
+            temp << loc_line << std::endl;
+            _paren_depth = paren_depth_after_line(loc_line, _paren_depth);
+            continue;
+        }
 
         loc_ignore = Filter(loc_line);
 
-        if (!loc_ignore) 
+        if (!loc_ignore)
         {
             temp << loc_line << std::endl;
+            _paren_depth = paren_depth_after_line(loc_line, 0);
         }
  
     }

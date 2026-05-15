@@ -1,11 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
--- Set default toolchain for Windows cross-compilation
-if is_host("linux") then
-    set_toolchains("gcc")
-    if is_plat("windows") then
-        set_toolchains("mingw")
-    end
+if is_plat("windows") and not is_host("windows") then
+    set_toolchains("mingw")
 end
 
 target("PapyrusSourceHeadliner")
@@ -23,6 +19,12 @@ target("PapyrusSourceHeadliner")
         add_links("pthread")
         add_defines("LINUX")
     end
+
+    on_config(function (target)
+        if target:is_plat("windows") and target:toolchain("mingw") then
+            target:add("ldflags", "-static", {force = true})
+        end
+    end)
 
     add_cxxflags("-Wall", "-Wextra")
     if is_mode("release") then
