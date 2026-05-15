@@ -83,7 +83,7 @@ bool PapyrusSource::Filter(std::string a_line)
         size_t loc_posapo1 = a_line.find('\"');
         size_t loc_posapo2 = a_line.find('\"',loc_posapo1 + 1);
 
-        std::cout << loc_comm1pos << " " << loc_comm2pos << std::endl;
+        //std::cout << loc_comm1pos << " " << loc_comm2pos << std::endl;
         if (!(((loc_posapo1 < loc_comm1pos) && (loc_posapo2 > loc_comm1pos)) || ((loc_posapo1 < loc_comm2pos) && (loc_posapo2 > loc_comm2pos)))) return true;
     }
 
